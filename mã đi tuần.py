@@ -1,4 +1,4 @@
-MAX = 8
+MAX = 9
 A = [[0] * MAX for _ in range(MAX)]  # Khởi tạo mảng giá trị 0
 X = [-2, -2, -1, -1, 1, 1, 2, 2]
 Y = [-1, 1, -2, 2, -2, 2, -1, 1]
