@@ -3,16 +3,17 @@ from settings import *
 
 pygame.font.init()
 
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, game, x, y, text):
         self.groups = game.all_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pygame.Surface((BOXSIZE, BOXSIZE))
-        self.x, self.y = x,y
+        self.x, self.y = x, y
         self.text = text
         self.rect = self.image.get_rect()
-        if self.text != 'empty':
+        if self.text != "empty":
             self.font = pygame.font.SysFont("Consolas", 50)
             font_surface = self.font.render(self.text, True, BLACK)
             self.image.fill(WHITE)
@@ -28,4 +29,19 @@ class Tile(pygame.sprite.Sprite):
         self.rect.y = self.y * BOXSIZE
 
     def click(self, mouse_x, mouse_y):
-        return self.rect.left <= mouse_x <= self.rect.right and self.rect.top <= mouse_y <= self.rect.bottom
+        return (
+            self.rect.left <= mouse_x <= self.rect.right
+            and self.rect.top <= mouse_y <= self.rect.bottom
+        )
+
+    def left(self):
+        return self.rect.x - BOXSIZE >= 0
+
+    def right(self):
+        return self.rect.x + BOXSIZE < GAME_SIZE * BOXSIZE
+
+    def up(self):
+        return self.rect.y - BOXSIZE >= 0
+
+    def down(self):
+        return self.rect.y + BOXSIZE < GAME_SIZE * BOXSIZE

@@ -1,7 +1,9 @@
+from numpy.random import default_rng
 import pygame
-import  time
-from  sprite import *
+import time
+from sprite import *
 from settings import *
+
 
 class Game:
     def __init__(self):
@@ -11,8 +13,17 @@ class Game:
         self.clock = pygame.time.Clock()
 
     def create_game(self):
-        grid = [[x + y * GAME_SIZE for x in range(1, GAME_SIZE + 1)] for y in range(GAME_SIZE)]
+        grid = [
+            [x + y * GAME_SIZE for x in range(1, GAME_SIZE + 1)]
+            for y in range(GAME_SIZE)
+        ]
         grid[-1][-1] = 0
+        return grid
+
+    def create_rdgame(self):
+        rng = default_rng()
+        numbers = rng.choice(9, size=9, replace=False)
+        grid = numbers.reshape((3, 3)).tolist()
         return grid
 
     def draw_tiles(self):
@@ -24,9 +35,10 @@ class Game:
                     self.tiles[row].append(Tile(self, col, row, str(tile)))
                 else:
                     self.tiles[row].append(Tile(self, col, row, "empty"))
+
     def new(self):
         self.all_sprites = pygame.sprite.Group()
-        self.tiles_grid = self.create_game()
+        self.tiles_grid = self.create_rdgame()
         self.tiles_grid_completed = self.create_game()
         self.draw_tiles()
 
@@ -42,10 +54,14 @@ class Game:
         self.all_sprites.update()
 
     def draw_grid(self):
-        for row in range(-1,GAME_SIZE * BOXSIZE, BOXSIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (row,0),(row, BOXSIZE * GAME_SIZE))
-        for col in range(-1,GAME_SIZE * BOXSIZE, BOXSIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (0, col),(BOXSIZE * GAME_SIZE, col))
+        for row in range(-1, GAME_SIZE * BOXSIZE, BOXSIZE):
+            pygame.draw.line(
+                self.screen, LIGHTGREY, (row, 0), (row, BOXSIZE * GAME_SIZE)
+            )
+        for col in range(-1, GAME_SIZE * BOXSIZE, BOXSIZE):
+            pygame.draw.line(
+                self.screen, LIGHTGREY, (0, col), (BOXSIZE * GAME_SIZE, col)
+            )
 
     def draw(self):
         self.screen.fill(BGCOLOUR)
@@ -59,7 +75,50 @@ class Game:
                 pygame.quit()
                 quit(0)
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                for row, tiles in enumerate(self.tiles):
+                    for col, tile in enumerate(tiles):
+                        if tile.click(mouse_x, mouse_y):
+                            if tile.right() and self.tiles_grid[row][col + 1] == 0:
+                                (
+                                    self.tiles_grid[row][col + 1],
+                                    self.tiles_grid[row][col],
+                                ) = (
+                                    self.tiles_grid[row][col],
+                                    self.tiles_grid[row][col + 1],
+                                )
+                            if tile.left() and self.tiles_grid[row][col - 1] == 0:
+                                (
+                                    self.tiles_grid[row][col - 1],
+                                    self.tiles_grid[row][col],
+                                ) = (
+                                    self.tiles_grid[row][col],
+                                    self.tiles_grid[row][col - 1],
+                                )
+                            if tile.up() and self.tiles_grid[row - 1][col] == 0:
+                                (
+                                    self.tiles_grid[row - 1][col],
+                                    self.tiles_grid[row][col],
+                                ) = (
+                                    self.tiles_grid[row][col],
+                                    self.tiles_grid[row - 1][col],
+                                )
+                            if tile.down() and self.tiles_grid[row + 1][col] == 0:
+                                (
+                                    self.tiles_grid[row + 1][col],
+                                    self.tiles_grid[row][col],
+                                ) = (
+                                    self.tiles_grid[row][col],
+                                    self.tiles_grid[row + 1][col],
+                                )
+
+                            self.draw_tiles()
+
+
 game = Game()
+
+
 while True:
     game.new()
     game.run()
