@@ -1,5 +1,5 @@
 # 8-puzzle
-8 puzzle solver using BFS, DFS, IDDFS and A-star algorithm
+8 puzzle solver using BFS, DFS, IDDFS and A-star, UCS algorithm 
 
 *It is assumed that goal state is:*
     

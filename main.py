@@ -1,4 +1,3 @@
-import resource
 import sys
 
 import numpy as np
@@ -8,6 +7,7 @@ from bfs import BFS
 from board import Board
 from dfs import DFS
 from iddfs import IDDFS
+from ucs import UCS
 
 
 def main():
@@ -21,6 +21,8 @@ def main():
         s = DFS(p)
     elif alg == 'ast':
         s = AStar(p)
+    elif alg == 'ucs':
+        s = UCS(p)
     else:
         print("Invalid input, continuing through A*")
         s = AStar(p)
@@ -34,9 +36,7 @@ def main():
     file.write('nodes_explored: ' + str(len(s.explored_nodes)) + '\n')
     file.write('search_depth: ' + str(s.solution.depth) + '\n')
     file.write('max_search_depth: ' + str(s.max_depth) + '\n')
-    file.write('running_time: ' + str(resource.getrusage(resource.RUSAGE_SELF).ru_utime + \
-                                      resource.getrusage(resource.RUSAGE_SELF).ru_stime) + '\n')
-    file.write('max_ram_usage: ' + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
+
 
     file.close()
 
