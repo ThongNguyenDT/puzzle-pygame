@@ -15,6 +15,7 @@ $ python main.py bfs 1,2,5,3,4,0,6,7,8
 $ python main.py dfs 1,2,5,3,4,0,6,7,8
 $ python main.py ids 1,2,5,3,4,0,6,7,8
 $ python main.py ast 1,2,5,3,4,0,6,7,8
+$ python main.py ucs 1,2,5,3,4,0,6,7,8
 ```
 
 Solution and details will be saved to ```{alg-name}_output.txt```.
