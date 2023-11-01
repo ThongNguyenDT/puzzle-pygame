@@ -9,6 +9,7 @@ from settings import *
 import numpy as np
 
 from ucs import UCS
+from astar import Astar
 
 
 class Game:
@@ -107,6 +108,7 @@ class Game:
         self.buttons_list.append(Button(425, 450, 100, 50, "BFS", WHITE, BLACK))
         self.buttons_list.append(Button(550, 450, 100, 50, "DFS", WHITE, BLACK))
         self.buttons_list.append(Button(675, 450, 100, 50, "UCS", WHITE, BLACK))
+        self.buttons_list.append(Button(300, 450, 100, 50, "Astar", WHITE, BLACK))
         self.draw_tiles()
 
     def run(self):
@@ -207,6 +209,10 @@ class Game:
                         if button.text == "UCS":
                             self.autoplay(2)
                             self.start_autoplay = True
+                        if button.text == "Astar":
+                            self.autoplay(3)
+                            self.start_autoplay = True
+
 
     def autoplay(self, i=2):
         if self.step_autoplay == 0:
@@ -223,6 +229,11 @@ class Game:
                 self.steps = path
             if i == 2:
                 puzzle_solver = UCS()
+                path = puzzle_solver.solve_puzzle(np.array(self.tiles_grid))
+                self.steps = path
+                print(path)
+            if i == 3:
+                puzzle_solver = Astar()
                 path = puzzle_solver.solve_puzzle(np.array(self.tiles_grid))
                 self.steps = path
                 print(path)
