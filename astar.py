@@ -1,5 +1,10 @@
 import heapq
 import numpy as np
+import pygame
+
+from settings import WHITE, BLACK, BGCOLOUR
+from sprite import UIElement, Button
+
 
 class PuzzleNode:
     def __init__(self, state, parent, move, cost, heuristic):
@@ -38,12 +43,19 @@ class Astar:
                     h += abs(i - target_i) + abs(j - target_j)
         return h
 
-    def solve_puzzle(self, initial_state):
+    def solve_puzzle(self, initial_state, sc):
         open_list = [PuzzleNode(initial_state, None, None, 0, self.heuristic(initial_state, self.GOAL_STATE))]
         closed_set = set()
         move_steps = []
 
+        deep = 0
+
         while open_list:
+            deep += 1
+            # Button(430, 350, 300, 50, "Deep - %.f" % deep, WHITE, BLACK).draw(sc)
+            #
+            # pygame.display.flip()
+            # # pygame.time.Clock().tick(60)
             current_node = heapq.heappop(open_list)
 
             if np.array_equal(current_node.state, self.GOAL_STATE):
@@ -52,7 +64,7 @@ class Astar:
                     solution_path.append(current_node.move)
                     current_node = current_node.parent
                 solution_path.reverse()
-                return solution_path
+                return solution_path, deep
 
             closed_set.add(tuple(map(tuple, current_node.state)))
 

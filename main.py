@@ -1,9 +1,12 @@
+import copy
+
 import pygame
 import random
 import time
 
 from bfs import BFS
 from dfs import DFS
+from hill import HillClimbingPuzzleSolver
 from sprite import *
 from settings import *
 import numpy as np
@@ -27,6 +30,8 @@ class Game:
         self.start_game = False
         self.start_timer = False
         self.elapsed_time = 0
+        self.deep = 0
+        self.reset_state = self.create_game()
         self.high_score = float(self.get_high_scores()[0])
 
     def get_high_scores(self):
@@ -72,13 +77,17 @@ class Game:
         choice = random.choice(possible_moves)
         self.previous_choice = choice
         if choice == "right":
-            self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], \
+                self.tiles_grid[row][col]
         elif choice == "left":
-            self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], \
+                self.tiles_grid[row][col]
         elif choice == "up":
-            self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], \
+                self.tiles_grid[row][col]
         elif choice == "down":
-            self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], \
+                self.tiles_grid[row][col]
 
     def draw_tiles(self):
         self.tiles = []
@@ -90,10 +99,12 @@ class Game:
                 else:
                     self.tiles[row].append(Tile(self, col, row, "empty"))
 
-
-    def new(self):
+    def new(self, reset=False):
         self.all_sprites = pygame.sprite.Group()
-        self.tiles_grid = self.create_game()
+        if not reset:
+            self.tiles_grid = self.create_game()
+        else:
+            self.tiles_grid = self.reset_state
         self.tiles_grid_completed = self.create_game()
         self.elapsed_time = 0
         self.start_timer = False
@@ -102,13 +113,17 @@ class Game:
         self.start_autoplay = False
         self.steps = np.array([])
         self.step_autoplay = 0
+        self.deep = 0
         self.buttons_list = []
         self.buttons_list.append(Button(500, 100, 200, 50, "Shuffle", WHITE, BLACK))
-        self.buttons_list.append(Button(500, 170, 200, 50, "Reset", WHITE, BLACK))
+        self.buttons_list.append(Button(500, 170, 200, 50, "Replay", WHITE, BLACK))
+        self.buttons_list.append(Button(500, 230, 200, 50, "ReSet", WHITE, BLACK))
         self.buttons_list.append(Button(425, 450, 100, 50, "BFS", WHITE, BLACK))
         self.buttons_list.append(Button(550, 450, 100, 50, "DFS", WHITE, BLACK))
         self.buttons_list.append(Button(675, 450, 100, 50, "UCS", WHITE, BLACK))
         self.buttons_list.append(Button(300, 450, 100, 50, "Astar", WHITE, BLACK))
+        self.buttons_list.append(Button(175, 450, 100, 50, "HILL", WHITE, BLACK))
+
         self.draw_tiles()
 
     def run(self):
@@ -142,12 +157,11 @@ class Game:
                 self.start_shuffle = False
                 self.start_game = True
                 self.start_timer = True
+                self.reset_state = copy.deepcopy(self.tiles_grid)
 
         if self.start_autoplay:
             if self.autoplay():
                 self.start_autoplay = False
-                time.sleep(5)
-                self.new()
             self.draw_tiles()
 
         self.all_sprites.update()
@@ -166,6 +180,7 @@ class Game:
             button.draw(self.screen)
         UIElement(550, 35, "%.3f" % self.elapsed_time).draw(self.screen)
         UIElement(430, 300, "High Score - %.3f" % (self.high_score if self.high_score > 0 else 0)).draw(self.screen)
+        UIElement(430, 355, "loop - %.3f" % self.deep).draw(self.screen)
         pygame.display.flip()
 
     def events(self):
@@ -180,16 +195,20 @@ class Game:
                     for col, tile in enumerate(tiles):
                         if tile.click(mouse_x, mouse_y):
                             if tile.right() and self.tiles_grid[row][col + 1] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+                                self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][
+                                    col + 1], self.tiles_grid[row][col]
 
                             if tile.left() and self.tiles_grid[row][col - 1] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+                                self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][
+                                    col - 1], self.tiles_grid[row][col]
 
                             if tile.up() and self.tiles_grid[row - 1][col] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+                                self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][
+                                    col], self.tiles_grid[row][col]
 
                             if tile.down() and self.tiles_grid[row + 1][col] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+                                self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][
+                                    col], self.tiles_grid[row][col]
 
                             self.draw_tiles()
 
@@ -198,8 +217,10 @@ class Game:
                         if button.text == "Shuffle":
                             self.shuffle_time = 0
                             self.start_shuffle = True
-                        if button.text == "Reset":
+                        if button.text == "Replay":
                             self.new()
+                        if button.text == "ReSet":
+                            self.new(True)
                         if button.text == "BFS":
                             self.autoplay(0)
                             self.start_autoplay = True
@@ -212,41 +233,46 @@ class Game:
                         if button.text == "Astar":
                             self.autoplay(3)
                             self.start_autoplay = True
-
+                        if button.text == "HILL":
+                            self.autoplay(4)
+                            self.start_autoplay = True
 
     def autoplay(self, i=2):
         if self.step_autoplay == 0:
 
             if i == 0:
                 s = BFS()
-                path = s.solve_puzzle(np.array(self.tiles_grid))
+                path, self.deep = s.solve_puzzle(np.array(self.tiles_grid), self.screen)
                 print(str(path))
                 self.steps = path
             if i == 1:
                 s = DFS()
-                path = s.solve_puzzle(np.array(self.tiles_grid))
+                path, self.deep = s.solve_puzzle(np.array(self.tiles_grid), self.screen)
                 print(str(path))
                 self.steps = path
             if i == 2:
                 puzzle_solver = UCS()
-                path = puzzle_solver.solve_puzzle(np.array(self.tiles_grid))
+                path, self.deep = puzzle_solver.solve_puzzle(np.array(self.tiles_grid), self.screen)
                 self.steps = path
                 print(path)
             if i == 3:
                 puzzle_solver = Astar()
-                path = puzzle_solver.solve_puzzle(np.array(self.tiles_grid))
+                path, self.deep = puzzle_solver.solve_puzzle(np.array(self.tiles_grid), self.screen)
+                print(self.deep)
+                self.steps = path
+                print(path)
+            if i == 4:
+                puzzle_solver = HillClimbingPuzzleSolver()
+                path, self.deep = puzzle_solver.hill_climbing(np.array(self.tiles_grid), self.screen)
                 self.steps = path
                 print(path)
 
         if self.step_autoplay == len(self.steps):
             return True
 
-
         print(np.array(self.tiles_grid))
         step = self.steps[self.step_autoplay]
         print(step)
-
-
 
         empty_pos = np.where(np.array(self.tiles_grid) == 0)
         row, col = empty_pos[0][0], empty_pos[1][0]
@@ -254,13 +280,17 @@ class Game:
         print(row)
         print(col)
         if step == "Right":
-            self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], \
+                self.tiles_grid[row][col]
         elif step == "Left":
-            self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], \
+                self.tiles_grid[row][col]
         elif step == "Up":
-            self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], \
+                self.tiles_grid[row][col]
         elif step == "Down":
-            self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+            self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], \
+                self.tiles_grid[row][col]
         self.step_autoplay += 1
         return False
 

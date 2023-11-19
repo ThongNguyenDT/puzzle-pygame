@@ -1,5 +1,10 @@
 import heapq
 import numpy as np
+import pygame
+
+from settings import WHITE, BLACK
+from sprite import Button
+
 
 class UCS:
     def __init__(self):
@@ -7,7 +12,7 @@ class UCS:
         self.MOVE_NAMES = ['Left', 'Right', 'Up', 'Down']
         self.GOAL_STATE = np.arange(0, 9).reshape(3, 3)
 
-    def solve_puzzle(self, initial_state):
+    def solve_puzzle(self, initial_state, sc):
         initial_state = np.array(initial_state).reshape((9,1)).flatten().tolist()
         def is_goal(puzzle):
             return puzzle == self.GOAL_STATE.reshape((9,1)).flatten().tolist()
@@ -32,8 +37,13 @@ class UCS:
         frontier = []
         start = (initial_state, None, None, 0)
         heapq.heappush(frontier, start)
-
+        deep = 0
         while frontier:
+            deep += 1
+            # Button(430, 350, 300, 50, "Deep - %.f" % deep, WHITE, BLACK).draw(sc)
+            #
+            # pygame.display.flip()
+            # # pygame.time.Clock().tick(60)
             current_puzzle, parent, action, cost = heapq.heappop(frontier)
 
             if is_goal(current_puzzle):
@@ -41,7 +51,7 @@ class UCS:
                 while action:
                     path.append(action)
                     current_puzzle, action, parent, cost = parent
-                return path[::-1]
+                return path[::-1], deep
 
             visited.add(tuple(current_puzzle))
 

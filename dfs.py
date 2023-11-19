@@ -1,4 +1,9 @@
 import numpy as np
+import pygame
+
+from settings import WHITE, BLACK
+from sprite import Button
+
 
 class DFS:
     def __init__(self, puzzle_size=3):
@@ -21,15 +26,21 @@ class DFS:
 
         return neighbors
 
-    def solve_puzzle(self, initial_state):
+    def solve_puzzle(self, initial_state, sc):
         visited = set()
         stack = [(initial_state, [])]
 
+        deep = 0
         while stack:
+            deep += 1
+            # Button(430, 350, 300, 50, "Deep - %.f" % deep, WHITE, BLACK).draw(sc)
+            #
+            # pygame.display.flip()
+            # # pygame.time.Clock().tick(60)
             current_state, moves = stack.pop()
 
             if np.array_equal(current_state, self.GOAL_STATE):
-                return moves
+                return moves, deep
 
             if tuple(map(tuple, current_state)) in visited:
                 continue
