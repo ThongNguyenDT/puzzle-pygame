@@ -6,7 +6,7 @@ import time
 
 from bfs import BFS
 from dfs import DFS
-from hill import HillClimbingPuzzleSolver
+from hill import HillClimbing
 from sprite import *
 from settings import *
 import numpy as np
@@ -262,8 +262,8 @@ class Game:
                 self.steps = path
                 print(path)
             if i == 4:
-                puzzle_solver = HillClimbingPuzzleSolver()
-                path, self.deep = puzzle_solver.hill_climbing(np.array(self.tiles_grid), self.screen)
+                puzzle_solver = HillClimbing()
+                path, self.deep = puzzle_solver.solve_puzzle(np.array(self.tiles_grid), self.screen)
                 self.steps = path
                 print(path)
 
